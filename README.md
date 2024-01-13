@@ -1,13 +1,7 @@
-# Sample Hardhat Project
+Create a factory contract that creates an NFT contract (which ties to real world events) and corresponding fungible currency token with an organizer as the owner of both contracts in an EVM chain of our choice.
+- Organizer already has a huge list of whitelisted addresses (10^6) and per address allowances for their currency token. These whitelisted addresses can mint the fungible currency tokens with an amount less than or equal to their allowance. More addresses with allowances can be added to the whitelist at any time and existing allowance of addresses can also be increased. 
+- Organizer sets a ticket_price for the NFT mints and this can be adjusted too. Also, there is a max_mint cap that is set by the organizer initially to limit the NFT mints by addresses. Design contracts accordingly.
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
-
-Try running some of the following tasks:
-
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.js
-```
+Let us say an organizer creates his NFT contract and his currency token contract with required attributes. We should also have primary and secondary marketplaces now where NFT tickets can be bought/sold.
+- The whitelisted addresses can mint currency tokens as per their allowance. The whitelisted addresses can then buy max_mint NFT tickets corresponding to the currency token from the primary marketplace at ticket_price of NFT.
+- A whitelisted user who got tickets from the primary marketplace can now also sell these tickets to any address now in the secondary marketplace, but the price can never be higher than 100% of the previous sale. Add a monetization option for the organizer in the secondary market sales as well.
