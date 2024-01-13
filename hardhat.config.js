@@ -51,10 +51,12 @@ module.exports = {
         },
       
         polygonMumbai: {
+            gas: 2100000,
+            gasPrice: 8000000000,
             gasLimit: 205000,
             allowUnlimitedContractSize: true,
             url: process.env.POLYGON_MUMBAI_URL,
-            accounts: [process.env.ACCOUNT_KEY],
+            accounts: [process.env.ACCOUNT_KEY , process.env.ACCOUNT1_KEY , process.env.ACCOUNT2_KEY , process.env.ACCOUNT3_KEY , process.env.ACCOUNT4_KEY],
           },
     },
 
@@ -65,7 +67,6 @@ module.exports = {
     },
 
     etherscan: {
-
-        apiKey: `CRKECNKKCXAFW2X9Q2EMTUK8IWXZ3FYUBY`,
-    },
+        apiKey: process.env.POLYGONSCAN_API_KEY,
+     }
 };

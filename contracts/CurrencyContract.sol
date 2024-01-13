@@ -15,7 +15,11 @@ contract CurrencyContract is ERC20, Ownable {
          primaryMarketPlace = _primaryMarketPlace;
     }
 
-    function mint(address to, uint256 amount) public  {
+    /// @notice function to mint currency tokens
+    /// @param to address of the minter
+    /// @param amount number of tokens to be minted
+    /// @dev can only be called from the primary marketplace contract
+    function mint(address to, uint256 amount) external  {
         require(msg.sender == primaryMarketPlace, "Unauthorized access");
         _mint(to, amount);
     }

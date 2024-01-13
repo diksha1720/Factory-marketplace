@@ -9,13 +9,34 @@ const hre = require("hardhat");
 async function main() {
 
   const ContractFactory = await hre.ethers.getContractFactory("ContractFactory");
-  const contractFactory = await ContractFactory.deploy("0xda28919a4F12eD1963f4f5fEAd8D49FbDE0125Db","100000000000", 1000000000);
+  const contractFactory = await ContractFactory.deploy();
 
   await contractFactory.deployed();
 
   console.log(
     `contractFactory deployed to ${contractFactory.address}`
   );
+
+
+  const PrimaryMarketPlace = await hre.ethers.getContractFactory("PrimaryMarketPlace");
+  const primaryMarketPlace = await PrimaryMarketPlace.deploy();
+
+  await primaryMarketPlace.deployed();
+
+  console.log(
+    `primaryMarketPlace deployed to ${primaryMarketPlace.address}`
+  );
+
+
+  const SecondaryMarketPlace = await hre.ethers.getContractFactory("SecondaryMarketPlace");
+  const secondaryMarketPlace = await SecondaryMarketPlace.deploy();
+
+  await secondaryMarketPlace.deployed();
+
+  console.log(
+    `secondaryMarketPlace deployed to ${secondaryMarketPlace.address}`
+  );
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere

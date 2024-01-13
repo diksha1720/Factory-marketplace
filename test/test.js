@@ -5,11 +5,11 @@ const {
   } = require("@nomicfoundation/hardhat-network-helpers");
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { expect } = require("chai");
-const {MerkleTree} = require("merkletreejs");
-const keccak256 = require("keccak256");
 var Web3 = require('web3');  
 const nftAbi = require('../artifacts/contracts/NFTContract.sol/NFTContract.json');
 const currencyabi = require('../artifacts/contracts/CurrencyContract.sol/CurrencyContract.json');
+
+const {createMerkleTree ,getMerkleProof} = require('../utils/commonUtils')
 
 
 const ContractFactory = hre.artifacts.readArtifact("ContractFactory");
@@ -24,20 +24,6 @@ let currencyContract
 let CurrencyContract
 let tokenId
 let merkleTreeMain
-
-
-function createMerkleTree(whiteListedAddresses){
-    let whitelist = whiteListedAddresses;
-    let leaves = whitelist.map(addr => keccak256(addr));
-    let merkleTree = new MerkleTree(leaves, keccak256, {sortPairs: true});
-    let rootHash =merkleTree.getRoot().toString('hex');
-    return [rootHash , merkleTree]
-}
-
-function getMerkleProof(merkleTree, address){
-    const proof =  merkleTree.getHexProof(keccak256(address));
-    return proof
-}
 
 describe("Game Contract Test Cases", () => {
     before(async () => {
@@ -66,9 +52,9 @@ describe("Game Contract Test Cases", () => {
         let whiteListedAddress = [account2.address, account3.address, account4.address,account5.address]
         let [rootHash , merkleTree] =   createMerkleTree(whiteListedAddress)
         merkleTreeMain = merkleTree
-        var txn = await contractFactory.connect(organizer).createEvent("event1", "evt1", "event happening in blr" , "1000000", "10000000000", "10000000000", '0x'+ rootHash)
+        eventId = 1
+        var txn = await contractFactory.connect(organizer).createEvent(eventId , "event1", "evt1", "event happening in blr" , "1000000", "10000000000", "10000000000", '0x'+ rootHash)
         var res = await txn.wait()
-        eventId = res.events.slice(-1)[0].args.eventId.toString()
         nftContract = res.events.slice(-1)[0].args.nftContract
         currencyContract = res.events.slice(-1)[0].args.currencyContract
         const provider = ethers.getDefaultProvider()
