@@ -51,12 +51,12 @@ describe("Game Contract Test Cases", () => {
         merkleTreeMain = merkleTree
         eventId = 1
 
-        await expect(contractFactory.connect(organizer).createEvent(eventId , "event1", "evt1", "event happening in blr" , "1000000", 100, "10000000", '0x'+ rootHash)).to.be.revertedWith("Global var not updated")
+        await expect(contractFactory.connect(organizer).createEvent(eventId , "event1", "evt1" , "1000000", 100, "10000000", '0x'+ rootHash)).to.be.revertedWithCustomError(contractFactory ,"GlobalVarNotUpdated")
 
         await expect(contractFactory.connect(account2).setGlobalVar( primaryMarketPlace.address , secondaryMarketPlace.address )).to.be.reverted
         await contractFactory.setGlobalVar( primaryMarketPlace.address , secondaryMarketPlace.address )
    
-        var txn = await contractFactory.connect(organizer).createEvent(eventId , "event1", "evt1", "event happening in blr" , "1000000", 100, "10000000", '0x'+ rootHash)
+        var txn = await contractFactory.connect(organizer).createEvent(eventId , "event1", "evt1" , "1000000", 100, "10000000", '0x'+ rootHash)
         var res = await txn.wait()
         nftContract = res.events.slice(-1)[0].args.nftContract
         currencyContract = res.events.slice(-1)[0].args.currencyContract
@@ -82,11 +82,11 @@ describe("Game Contract Test Cases", () => {
 
     it("should mint tokens from primary market place", async()=>{
         var proof = getMerkleProof(merkleTreeMain , account6.address)
-        await expect(primaryMarketPlace.connect(account6).mintTokens(eventId,"1000000",proof )).to.be.revertedWith("Not whitelisted")
+        await expect(primaryMarketPlace.connect(account6).mintTokens(eventId,"1000000",proof )).to.be.revertedWithCustomError(primaryMarketPlace ,"UserNotWhiteListed")
 
         var proof = getMerkleProof(merkleTreeMain , account2.address)
    
-        await expect(primaryMarketPlace.connect(account2).mintTokens(eventId,"10000000000000",proof )).to.be.revertedWith("mint amount exceeds allowance")
+        await expect(primaryMarketPlace.connect(account2).mintTokens(eventId,"10000000000000",proof )).to.be.revertedWithCustomError(primaryMarketPlace ,"AllowanceExceeded")
 
         await primaryMarketPlace.connect(account2).mintTokens(eventId,"1000000",proof )
 
@@ -99,11 +99,11 @@ describe("Game Contract Test Cases", () => {
         var txn =await CurrencyContract.connect(account2).approve(primaryMarketPlace.address , "10000000")
         var proof = getMerkleProof(merkleTreeMain , account2.address)
        
-        await  expect(primaryMarketPlace.connect(account6).mintNFT(eventId, 1 , proof)).to.be.revertedWith("Not whitelisted")
+        await  expect(primaryMarketPlace.connect(account6).mintNFT(eventId, 1 , proof)).to.be.revertedWithCustomError(primaryMarketPlace ,"UserNotWhiteListed")
 
-        await  expect(primaryMarketPlace.connect(account2).mintNFT(eventId, 1000 , proof)).to.be.revertedWith("mint amount exceeds allowance")
+        await  expect(primaryMarketPlace.connect(account2).mintNFT(eventId, 1000 , proof)).to.be.revertedWithCustomError(primaryMarketPlace , "AllowanceExceeded")
 
-        await  expect(primaryMarketPlace.connect(account2).mintNFT(eventId, 100 , proof)).to.be.revertedWith("insufficient funds")
+        await  expect(primaryMarketPlace.connect(account2).mintNFT(eventId, 100 , proof)).to.be.revertedWithCustomError(primaryMarketPlace  , "InsufficientFunds")
 
         var txn1 = await primaryMarketPlace.connect(account2).mintNFT(eventId, 1 , proof)
         var res = await txn1.wait()
@@ -119,13 +119,13 @@ describe("Game Contract Test Cases", () => {
     it("should resell the minted NFT on secondary marketplace", async() => {
         var tx = await NFTContract.connect(account2).setApprovalForAll(secondaryMarketPlace.address, true)
         
-        await expect(secondaryMarketPlace.connect(account3).listNFT(eventId, tokenId , "10000")).to.be.revertedWith("Not the owner")
+        await expect(secondaryMarketPlace.connect(account3).listNFT(eventId, tokenId , "10000")).to.be.revertedWithCustomError(secondaryMarketPlace , "InvalidOwner")
 
         await secondaryMarketPlace.connect(account2).listNFT(eventId, tokenId , "10000")
     })
 
     it("another user should be able to buy the listed NFTs ", async() =>{
-        await expect(secondaryMarketPlace.connect(account6).buyNFT(nftContract , tokenId + 1 , {value :"10000" })).to.be.revertedWith("NFT not listed")
+        await expect(secondaryMarketPlace.connect(account6).buyNFT(nftContract , tokenId + 1 , {value :"10000" })).to.be.revertedWithCustomError(secondaryMarketPlace ,"NftNotListed")
         
         await secondaryMarketPlace.connect(account6).buyNFT(nftContract , tokenId , {value :"10000" })
     })
@@ -133,9 +133,9 @@ describe("Game Contract Test Cases", () => {
     it("end user can list the bought NFT to the secondary marketplace again", async function(){
         var tx = await NFTContract.connect(account6).setApprovalForAll(secondaryMarketPlace.address, true)
         
-        await expect(secondaryMarketPlace.connect(account3).listNFT(eventId, tokenId , "10000")).to.be.revertedWith("Not the owner")
+        await expect(secondaryMarketPlace.connect(account3).listNFT(eventId, tokenId , "10000")).to.be.revertedWithCustomError(secondaryMarketPlace , "InvalidOwner")
 
-        await expect(secondaryMarketPlace.connect(account6).listNFT(eventId, tokenId , "1000000")).to.be.revertedWith("listing price can't exceed mint price")
+        await expect(secondaryMarketPlace.connect(account6).listNFT(eventId, tokenId , "1000000")).to.be.revertedWithCustomError(secondaryMarketPlace , "PriceExceedsPrevPrice")
 
         await secondaryMarketPlace.connect(account6).listNFT(eventId, tokenId , "10000")
    

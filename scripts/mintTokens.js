@@ -3,8 +3,8 @@ require("dotenv").config();
 const {contractFactoryContractAddress, primaryMarketPlaceContractAddress , secondaryMarketPlaceContractAddress , createMerkleTree ,getMerkleProof } = require('../utils/commonUtils')
 
 const eventId = 1 
-const nftContractAddress = "0x5f9a0c9Fa6D10B562ECc39b2923e1A6BffaD76b5"
-const currencyContractAddress = "0x98A86af3CBFc8c66f076776350dff6bfAAc0cE38" //fetch these values from DB
+const nftContractAddress = "0x94a082820837ad8Cd0175cFb82BD3e1999c2E7A2"
+const currencyContractAddress = "0xe034331eCd5b6d41BC2938e02320aD7113F3AE22" //fetch these values from DB
 
 let contractFactory
 let primaryMarketPlace
@@ -45,7 +45,6 @@ async function main(){
     merkleProof = getMerkleProof(merkleTree , whitelistedUser1.address)
 
     // mintTokens()
-
     mintNFT()
 }
 

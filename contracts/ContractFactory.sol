@@ -12,8 +12,6 @@ contract ContractFactory is Ownable{
     address public secondaryMarketPlace;
 
     struct Event {
-        string name;
-        string description;
         address nftContract;
         address currencyContract;
         address organizer;
@@ -30,23 +28,28 @@ contract ContractFactory is Ownable{
     event OrganizerUpdated(uint256 eventId, address newOrganizer);
     event GlobalVarUpdated();
 
+    error GlobalVarNotUpdated();
+    error InvalidEventId();
+    error InvalidOrganizer();
+
     constructor() Ownable(msg.sender){
     }
 
     /// @notice function to create a new event and deploy corresponding NFT and currency token contracts
     /// @param _name name of the NFT Token / Currency Token
     /// @param _symbol symbol of the NFT Token
-    /// @param _description description of the event
     /// @param _ticketPrice price of the NFT
     /// @param _maxMintAllowed maximum NFT mints allowed to a whitelisted address
     /// @param _allowance maximum currency mints allowed to a whitelisted address
     /// @param _merkleRootHash merkle root hash for whitelisted users
     /// @dev the organizers need to call this function to add an event
-    function createEvent(uint eventId , string memory _name, string memory _symbol , string memory _description , uint _ticketPrice, uint _maxMintAllowed , uint _allowance , bytes32  _merkleRootHash) external {
-        require(primaryMarketPlace != address(0), "Global var not updated");
+    function createEvent(uint eventId , string memory _name, string memory _symbol , uint _ticketPrice, uint _maxMintAllowed , uint _allowance , bytes32  _merkleRootHash) external {
+        if(primaryMarketPlace == address(0)){
+            revert GlobalVarNotUpdated();
+        } 
         NFTContract nftContract = new NFTContract(_name, _symbol,msg.sender , primaryMarketPlace, secondaryMarketPlace);
         CurrencyContract currencyContract = new CurrencyContract(_name,  _symbol, msg.sender,primaryMarketPlace);
-        allEvents[eventId] = Event(_name, _description, address(nftContract) , address(currencyContract) ,  msg.sender, _ticketPrice ,_maxMintAllowed , _allowance ,_merkleRootHash);  
+        allEvents[eventId] = Event(address(nftContract) , address(currencyContract) ,  msg.sender, _ticketPrice ,_maxMintAllowed , _allowance ,_merkleRootHash);  
         emit NewEventCreated(eventId, _name, address(nftContract), address(currencyContract));
     }
 
@@ -59,8 +62,14 @@ contract ContractFactory is Ownable{
     /// @dev only organizers of that particular event can update existing event
     function updateEvent(uint _eventId ,  uint _ticketPrice, uint _maxMintAllowed , uint _allowance , bytes32 _merkleRootHash) external  {
         Event storage _currentEvent = allEvents[_eventId];
-        require(_currentEvent.nftContract != address(0), "invalid event id");
-        require(_currentEvent.organizer == msg.sender, "only organizer can update events");
+        if(_currentEvent.nftContract == address(0))
+        {
+            revert InvalidEventId();
+        }
+        if(_currentEvent.organizer != msg.sender)
+        {
+            revert InvalidOrganizer();
+        }
         _currentEvent.ticketPrice = _ticketPrice;
         _currentEvent.maxMint = _maxMintAllowed;
         _currentEvent.allowance = _allowance;
@@ -74,9 +83,15 @@ contract ContractFactory is Ownable{
     /// @dev only organizers of that particular event can update the organizer
     function changeOrganizer(address _organizer , uint _eventId) external {
         Event storage _currentEvent = allEvents[_eventId];
-        require(_currentEvent.nftContract != address(0), "invalid event id");
-        require(_currentEvent.organizer == msg.sender, "only organizer can update events");
-        _currentEvent.organizer = _organizer;
+        if(_currentEvent.nftContract == address(0))
+        {
+            revert InvalidEventId();
+        }       
+         if(_currentEvent.organizer != msg.sender)
+        {
+            revert InvalidOrganizer();
+        }
+         _currentEvent.organizer = _organizer;
         emit OrganizerUpdated(_eventId,_organizer );
     }
 

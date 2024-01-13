@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./Interfaces/INFTContract.sol";
 import "./Interfaces/ICurrencyToken.sol";
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 
 contract PrimaryMarketPlace is Ownable{
@@ -15,6 +15,10 @@ contract PrimaryMarketPlace is Ownable{
 
     constructor() Ownable(msg.sender){
     }
+
+    error UserNotWhiteListed();
+    error AllowanceExceeded();
+    error InsufficientFunds();
 
     //useraddress => contractaddress => amountoftokensowned
      mapping(address => mapping(address => uint)) tokenMintsByAddress;
@@ -29,9 +33,13 @@ contract PrimaryMarketPlace is Ownable{
     /// @param _proof proof array of the whitelisted address for the merkle tree
     /// @dev only whitelisted users for the contarct can call this function
     function mintTokens(uint256 _eventId,uint256 _amount , bytes32[] memory _proof ) external {
-        require(contractFactory.isWhiteListed(_eventId , msg.sender , _proof), "Not whitelisted");
+        if(!contractFactory.isWhiteListed(_eventId , msg.sender , _proof)){
+            revert UserNotWhiteListed();
+        }
         ContractFactory.Event memory _currentEvent = contractFactory.getEventDetails(_eventId);
-        require(tokenMintsByAddress[msg.sender][_currentEvent.currencyContract] + _amount  <= _currentEvent.allowance , "mint amount exceeds allowance") ;
+        if(tokenMintsByAddress[msg.sender][_currentEvent.currencyContract] + _amount  > _currentEvent.allowance){
+            revert AllowanceExceeded();
+        }
         tokenMintsByAddress[msg.sender][_currentEvent.currencyContract] += _amount;
         ICurrencyToken(_currentEvent.currencyContract).mint(msg.sender, _amount);
         emit TokensMinted(msg.sender, _amount);
@@ -43,14 +51,20 @@ contract PrimaryMarketPlace is Ownable{
     /// @param _proof proof array of the whitelisted address for the merkle tree
     /// @dev only whitelisted users for the contarct can call this function
     function mintNFT(uint256 _eventId,uint256 _amount ,  bytes32[] memory _proof) external {
-        require(contractFactory.isWhiteListed(_eventId , msg.sender, _proof), "Not whitelisted");
+        if(!contractFactory.isWhiteListed(_eventId , msg.sender , _proof)){
+            revert UserNotWhiteListed();
+        }        
         ContractFactory.Event memory _currentEvent = contractFactory.getEventDetails(_eventId);
         address nftContract = _currentEvent.nftContract;
         address currencyContract = _currentEvent.currencyContract;
-        require(nftMintsByAddress[msg.sender][nftContract] + _amount  <= _currentEvent.maxMint , "mint amount exceeds allowance");
+        if(nftMintsByAddress[msg.sender][nftContract] + _amount  > _currentEvent.maxMint){
+            revert  AllowanceExceeded();
+        }
         uint tokenBalanceOfUser = IERC20(currencyContract).balanceOf(msg.sender);
         uint totalCost = _amount * _currentEvent.ticketPrice;
-        require(totalCost <= tokenBalanceOfUser , "insufficient funds");
+        if(totalCost > tokenBalanceOfUser){
+            revert InsufficientFunds();
+        }
         nftMintsByAddress[msg.sender][nftContract]+=_amount;
         address  _minter = msg.sender;
         IERC20(currencyContract).transferFrom( _minter ,_currentEvent.organizer, totalCost);

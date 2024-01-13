@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./ContractFactory.sol";
 import "./NFTContract.sol";
 import "./Interfaces/INFTContract.sol";
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 
 contract SecondaryMarketPlace is Ownable {
@@ -31,6 +31,11 @@ contract SecondaryMarketPlace is Ownable {
     event NFTListed(address nftContract,uint tokenId , address listingUserAddress , uint _price);
     event NFTBought(address nftContract,uint tokenId , address buyerAddress);
 
+    error InvalidOwner();
+    error PriceExceedsPrevPrice();
+    error NftNotListed();
+    error InsufficientFunds();
+
     /// @notice function to list an NFT for sale by the nftOwner
     /// @param _eventId event Id of the event for which the NFT collection was created
     /// @param _tokenId tokenId of the NFT to be listed for sale
@@ -38,10 +43,15 @@ contract SecondaryMarketPlace is Ownable {
     /// @dev function can only be called by the owner of the NFT
     function listNFT(uint256 _eventId, uint256 _tokenId, uint256 _price) external {
         ContractFactory.Event memory _currentEvent = contractFactory.getEventDetails(_eventId);
-        require(IERC721(_currentEvent.nftContract).ownerOf(_tokenId) == msg.sender, "Not the owner");
+        if(IERC721(_currentEvent.nftContract).ownerOf(_tokenId) != msg.sender)
+        {
+            revert InvalidOwner();
+        }
         NFTList storage _newListing = allNFTListings[_currentEvent.nftContract][_tokenId];
         if(_newListing.prevPrice!=0){
-            require(_price <= _newListing.prevPrice  , "listing price can't exceed mint price");
+            if(_price > _newListing.prevPrice){
+                revert PriceExceedsPrevPrice();
+            }
         }
         _newListing.eventId = _eventId;
         _newListing.seller = msg.sender;
@@ -57,9 +67,13 @@ contract SecondaryMarketPlace is Ownable {
     /// @dev function can be called by any end user
     function buyNFT(address _nftContract , uint _tokenId) external payable {
         NFTList storage _nftListing = allNFTListings[_nftContract][_tokenId];
-        require(_nftListing.isListed , "NFT not listed");
+        if(!_nftListing.isListed){
+            revert NftNotListed();
+        }
         ContractFactory.Event memory _currentEvent = contractFactory.getEventDetails(_nftListing.eventId);
-        require(msg.value >= _nftListing.price , "Insufficient funds");
+        if(msg.value < _nftListing.price){
+            revert InsufficientFunds();
+        }
         _nftListing.isListed = false;
         _nftListing.prevPrice = _nftListing.price;
         _nftListing.price = 0;
