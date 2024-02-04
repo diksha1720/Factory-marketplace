@@ -1,7 +1,32 @@
-Create a factory contract that creates an NFT contract (which ties to real world events) and corresponding fungible currency token with an organizer as the owner of both contracts in an EVM chain of our choice.
-- Organizer already has a huge list of whitelisted addresses (10^6) and per address allowances for their currency token. These whitelisted addresses can mint the fungible currency tokens with an amount less than or equal to their allowance. More addresses with allowances can be added to the whitelist at any time and existing allowance of addresses can also be increased. 
-- Organizer sets a ticket_price for the NFT mints and this can be adjusted too. Also, there is a max_mint cap that is set by the organizer initially to limit the NFT mints by addresses. Design contracts accordingly.
 
-Let us say an organizer creates his NFT contract and his currency token contract with required attributes. We should also have primary and secondary marketplaces now where NFT tickets can be bought/sold.
-- The whitelisted addresses can mint currency tokens as per their allowance. The whitelisted addresses can then buy max_mint NFT tickets corresponding to the currency token from the primary marketplace at ticket_price of NFT.
-- A whitelisted user who got tickets from the primary marketplace can now also sell these tickets to any address now in the secondary marketplace, but the price can never be higher than 100% of the previous sale. Add a monetization option for the organizer in the secondary market sales as well.
+Unleash your event with NFTs and currency on Polygon!
+Hey creators, listen up!  Tired of limiting event experiences? I've built a powerful tool to unlock boundless possibilities on the Polygon Network.
+
+Whitelisted Access & Tokenized Participation:
+
+I crafted a factory contract that churns out two key components:
+
+Unique NFT Tickets: These beauties tie directly to your real-world events, granting access and igniting excitement.
+Fungible Currency Tokens: Your dedicated event currency, minted by whitelisted participants using their pre-set allowances.
+Whitelist Management at Your Fingertips:
+
+You control the guest list! Effortlessly manage 1 million whitelisted addresses with per-address allowances.
+Add new participants or adjust allowances anytime, ensuring flexibility and inclusivity.
+Dynamic Pricing & Limited Editions:
+
+Set the perfect ticket price and adjust it as needed to match your event's value.
+Control the total number of NFTs mintable, creating excitement through limited editions.
+Seamless Marketplaces:
+
+Let the fun begin! Your primary marketplace allows whitelisted users to purchase NFTs using their event currency.
+A thriving secondary marketplace lets users resell their NFTs, but with a twist: prices can't exceed the previous sale, fostering a healthy ecosystem.
+Organizer, You Win Too!
+
+Earn a slice of the pie! I've integrated a monetization option for you in secondary market sales, rewarding your efforts.
+Ready to take your event to the next level?
+
+This innovative factory contract is your key. Create a unique experience, manage participants efficiently, and unlock new revenue streams—all on the secure and scalable Polygon Network.
+
+Let's make your event unforgettable! ✨
+
+P.S. This is just a summary. The actual code goes much deeper, ensuring security, efficiency, and customization for your specific needs.
